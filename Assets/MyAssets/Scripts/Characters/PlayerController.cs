@@ -131,12 +131,14 @@ public class PlayerController : MonoBehaviour
             Dodge(new Vector3(movement.x, 0, movement.z));
         }
 
+        //If movement is not 0 and the player isnt moving vertically
         if (movement.x != 0 || movement.z != 0 || movement.y != 0|| !Mathf.Approximately(rigidBody.velocity.y, 0f))
         {
             MovePlayer(movement);
         }
-        else
+        else // If the player is not intending to move and they're not falling
         {
+            //Set the velocity of the player to zero
             rigidBody.velocity = Vector3.zero;
         }
     }
@@ -200,23 +202,4 @@ public class PlayerController : MonoBehaviour
             dodgeTimer.ResetTimer();
         }
     }
-
-    /*
-    private IEnumerator Dodge(Vector3 direction)
-    {
-        if (!isDodging)
-        {
-            isDodging = true;
-
-            while (dodgeTimer.GetTime() <= 0.6f)
-            {
-                dodgeTimer.IncrementTimer();
-                MovePlayer(direction);
-                yield return null;
-            }
-
-            dodgeTimer.ResetTimer();
-            isDodging = false;
-        }
-    }*/
 }

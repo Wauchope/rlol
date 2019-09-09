@@ -51,20 +51,8 @@ public abstract class NonPlayerCharacter : MonoBehaviour
         agent.acceleration = agent.speed;
     }
 
-    public virtual void TargetPlayer(float searchRadius = 25f)
-    {
 
-        if (Vector3.Distance(player.transform.position, gameObject.transform.position) < searchRadius)
-        {
-            SetPath(player.transform.position);
-        }
-        else
-        {
-            SetPath(restPosition);
-        }
-    }
-
-    private void SetPath(Vector3 targetPos)
+    public void SetPath(Vector3 targetPos)
     {
         if (!(targetPos == goal))
         {
@@ -77,28 +65,12 @@ public abstract class NonPlayerCharacter : MonoBehaviour
         TriggerEnter(other);
     }
 
-            /*if (characterData.UnitType == UnitType.ENEMY)
-        {
-            if (other.CompareTag("PlayerSword"))
-            {
-                if (player.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("SwordSlash_01"))
-                {
-                    health.TakeDamage(5);
-
-                    if (health.CurrentHealth <= 0)
-                    {
-                        Die();
-}
-                }
-            }
-        }*/
-
     public virtual void TriggerEnter(Collider other)
     {
 
     }
 
-    public virtual void Die()
+    public void Die()
     {
         gameObject.SetActive(false);
         GameManager.Instance.EnemyPool.ReleaseObject(gameObject);

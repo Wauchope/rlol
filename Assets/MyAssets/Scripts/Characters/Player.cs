@@ -32,6 +32,7 @@ public class Player : MonoBehaviour
         controller = GetComponent<PlayerController>();
     }
 
+    //Creates the stats and sets their base values
     private List<Stat> InitStats()
     {
         List<Stat> statList = new List<Stat>();
@@ -44,6 +45,7 @@ public class Player : MonoBehaviour
         return statList;
     }
 
+    //Returns the player's damage after all modifiers
     public int GetDamage()
     {
         return /*weapon base damage*/ 3 + stats[0].GetValue() ;

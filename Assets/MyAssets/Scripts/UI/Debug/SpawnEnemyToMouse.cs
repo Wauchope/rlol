@@ -11,8 +11,6 @@ public class SpawnEnemyToMouse : MonoBehaviour
 
     //The world position which the cursor is hovering over
     Vector3 hoverPos = new Vector3();
-    //The screen position of the mouse cursor
-    Vector2 mousePos = new Vector2();
 
     bool active;
 
@@ -50,11 +48,13 @@ public class SpawnEnemyToMouse : MonoBehaviour
 
     private void CheckCursorPosition()
     {        
+        //Creates a raycast from the camera to the mouse position
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        RaycastHit hit;
-        if (Physics.Raycast(ray, out hit))
+        //If the raycast ray collides with an object
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
+            //Set the hoverposition to the collision point
             hoverPos = hit.point;
         }
         
@@ -64,8 +64,10 @@ public class SpawnEnemyToMouse : MonoBehaviour
 
     private void MoveGhostCursor()
     {
+        //If the ghost cursor is active in the heirarchy
         if (ghostCursor.activeInHierarchy)
         {
+            //Move the ghost object to the where the cursor is hovering
             CheckCursorPosition();
             ghostCursor.transform.position = hoverPos;
         }
@@ -74,7 +76,7 @@ public class SpawnEnemyToMouse : MonoBehaviour
 
     private void CreateGhostObject(GameObject objectToCreate)
     {
-        //Instantiate(objectToCreate, hoverPos, Quaternion.identity);
+        //Creates the selected object at the current mouse hover position
         GameObject newObject = GameManager.Instance.EnemyPool.CreateObject(objectToCreate, hoverPos);
     }
 

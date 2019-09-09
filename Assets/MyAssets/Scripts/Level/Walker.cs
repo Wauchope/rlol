@@ -76,7 +76,8 @@ public class Walker : MonoBehaviour
             {
                 Die();
             }
-        }*/
+        }
+        */
     }
 
     private void Die()
@@ -95,8 +96,6 @@ public class Walker : MonoBehaviour
         CurrentGridPos = start;
         targetPos = target;
         this.tileWidth = tileWidth;
-
-        Debug.Log(targetPos);
 
         visited = new List<Vector2>();
         walking = true;
@@ -123,6 +122,7 @@ public class Walker : MonoBehaviour
             if (!LevelGrid.Instance.DoesTileExistAtPoint(nextPos))
             {
                 Tile tile = Instantiate(GetComponentInParent<LevelGenerator>().tileObject, transform.position, Quaternion.identity, transform.parent).GetComponent<Tile>();
+                tile.SetColour(LevelGenerator.GetColourFromInt(Mathf.FloorToInt(Vector2.Distance(tile.GetTilePos(), Vector2.zero))));
                 LevelGrid.Instance.AddPosToGrid(nextPos, tile);
             }
             transform.position += Vector3.up * yOffset;

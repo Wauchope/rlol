@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Perhaps use inheritance here
 public enum Stats
 {
     Strength, Dexterity, Resilience

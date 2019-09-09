@@ -8,10 +8,25 @@ public class Tile : MonoBehaviour
     public int id;
     public string name;
 
-    public Vector2 position;
+    Renderer renderer;
 
-    private void Start()
+    private void Awake()
     {
-        position = transform.position;
+        renderer = gameObject.GetComponent<MeshRenderer>();
+    }
+
+    public void SetColour(Color colour)
+    {
+        renderer.material.SetColor("_Color", colour);
+    }
+
+    public Vector2 GetTilePos()
+    {
+        return new Vector2(transform.position.x / LevelGenerator.Instance.GetTileWidth(), transform.position.z / LevelGenerator.Instance.GetTileWidth());
+    }
+
+    public int GetDistanceFromOrigin()
+    {
+        return Mathf.FloorToInt(Vector2.Distance(GetTilePos(), Vector2.zero));
     }
 }

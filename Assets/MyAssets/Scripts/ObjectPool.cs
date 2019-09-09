@@ -13,6 +13,8 @@ public class ObjectPool : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //Perhaps call in Awake()
+        //Initialize the pool lists (avoids null reference error)
         activePool = new List<GameObject>();
         inactivePool = new List<GameObject>();
     }
@@ -26,19 +28,29 @@ public class ObjectPool : MonoBehaviour
     //Change so it returns the created object? might be useful
     public GameObject CreateObject(GameObject objectToCreate, Vector3 position)
     {
-        GameObject foundObject = SearchForObjectInPool(objectToCreate, inactivePool);
+        GameObject foundObject;
+        foundObject = SearchForObjectInPool(objectToCreate, inactivePool);
+        //If an object of the requested type does not exist in the object pool
         if (foundObject == null)
         {
-            GameObject __newObject = Instantiate(objectToCreate, position, Quaternion.identity, transform);
-            __newObject.name = "Enemy";
-            __newObject.SetActive(true);
-            activePool.Add(__newObject);
+
+            //Create the new object
+            foundObject = Instantiate(objectToCreate, position, Quaternion.identity, transform);
+            //Name the new object
+            foundObject.name = "Enemy";
+            //Set it to be active in the heirarchy
+            foundObject.SetActive(true);
+            //Add the object to the active pool
+            activePool.Add(foundObject);
         }
         else
         {
+            //Remove the found object from the inactive pool and adds it to the active pool
             inactivePool.Remove(foundObject);
             activePool.Add(foundObject);
+            //Moves the object to the given Vector3 position
             foundObject.transform.position = position;
+            //Sets the object to active in the heirarchy 
             foundObject.SetActive(true);
 
             //Sets the objects start position to the clicked position
@@ -51,11 +63,13 @@ public class ObjectPool : MonoBehaviour
     {
         if (SearchForObjectInPool(objectToDisable, activePool) != null)
         {
+            //Swaps the pool that the object is in
             activePool.Remove(objectToDisable);
             inactivePool.Add(objectToDisable);
         }
         else
         {
+            //An object was in the wrong pool, im doing something seriously wrong
             Debug.Log("Object is not currently active. WTF");
         }
     }
@@ -65,15 +79,16 @@ public class ObjectPool : MonoBehaviour
         GameObject foundObject = null;
         Debug.Log(objectToFind.name);
 
+        //Returns null if the given pool or the gameobject containing this script is empty.
         if (gameObject.transform.childCount == 0 || pool.Count == 0)
         {
             return foundObject;
         }
 
+        //Iterates over each child object of the gameobject containing this script
         for (int i = 0; i < gameObject.transform.childCount; i++)
         {
-            Debug.Log(pool[i].name);
-            //If object with same name is found AND found object is not active in the hierarchy
+            //If object with same name is found in the given pool
             if (objectToFind.name == pool[i].name)
             {
                 foundObject = pool[i];

@@ -9,15 +9,21 @@ public class LevelGrid
 
     public Vector2 size { get; private set; }
     //Allows referencing a tile's id (int) by providing its position (int[,])
-    private Dictionary<Vector2, Tile> pointDict;
-    
-    
+    private Dictionary<Vector2, Tile> pointDict;    
 
     public LevelGrid(Vector2 size)
     {
         this.size = size;
         pointDict = new Dictionary<Vector2, Tile>();
-        Instance = this;
+
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Debug.Log("Error: Attempting to create more than one level grid on this level");
+        }
     }
 
     private void CreateGrid()
@@ -163,13 +169,20 @@ public class LevelGrid
 
     public bool DoesTileExistAtPoint(Vector2 point)
     {
-        if (pointDict.ContainsKey(point))
+        if (point.x <= size.x && point.x <= size.y)
         {
-            return true;
+            if (pointDict.ContainsKey(point))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {
-            return false;
+            return true;
         }
     }
 
@@ -190,6 +203,21 @@ public class LevelGrid
         }
 
         return neighbours;
+    }
+
+    public Tile GetTileAtPoint(Vector2 position)
+    {
+        if (DoesTileExistAtPoint(position))
+        {
+            pointDict.TryGetValue(position, out Tile tile);
+            return tile;
+        }
+        else
+        {
+            Debug.Log("Error: Tile does not exist at " + position);
+            return null;
+        }
+
     }
 
     //IMPORTED FROM https://stackoverflow.com/questions/1028136/random-entry-from-dictionary

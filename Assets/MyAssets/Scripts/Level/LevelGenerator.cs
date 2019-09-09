@@ -10,19 +10,32 @@ public enum Direction
 
 public class LevelGenerator : MonoBehaviour
 {
+    public static LevelGenerator Instance;
+
     [SerializeField] public GameObject tileObject;
     [SerializeField] private GameObject walkerObject;
 
-    NavMeshSurface navMeshSurface;
+    private NavMeshSurface navMeshSurface;
 
-    int tileWidth = 25;
-    LevelGrid grid;
+    private List<Room> rooms;
+
+    private int tileWidth = 25;
+    private LevelGrid grid;
 
     // Start is called before the first frame update
     void Start()
     {
         navMeshSurface = GetComponentInParent<NavMeshSurface>();
+        rooms = new List<Room>();
+
+
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+
         GenerateLevel();
+
     }
 
     // Update is called once per frame
@@ -43,19 +56,33 @@ public class LevelGenerator : MonoBehaviour
         //3e. Destroy walker
         //LOOP END
         //4. Build NavMesh
-        grid = CreateGrid(50, 50);
+        
+
+
+
+        //1
+        grid = CreateGrid(100, 100);
+        //2
         CreateStartArea(3, 3);
 
+        //3 & 4
         StartCoroutine(CreateLevel());
+
+        //3 WITH ROOMS
+        //CreateRooms(25);
     }
 
     private IEnumerator CreateLevel()
     {
+        CreateRooms(25);
+        //3
         for (int i = 0; i < 10; i++)
         {
             CreateRandomBranch(out Walker walker);
             yield return new WaitWhile(() => walker.walking);
         }
+
+        //4
         BuildNavMesh();
 
     }
@@ -79,6 +106,7 @@ public class LevelGenerator : MonoBehaviour
         }
         else
         {
+            //Create the spawn area
             for (int y = 0; y < startSizeY; y++)
             {
                 for (int x = 0; x < startSizeX; x++)
@@ -105,9 +133,6 @@ public class LevelGenerator : MonoBehaviour
         //3b
         List<Vector2> freePositions = new List<Vector2>();
 
-        //Implement pathfinding
-        //Make walker place tiles
-
         //Selects a random empty position next to the tile.
         int selectedIndex = Random.Range(0, freePositions.Count);
         while (freePositions.Count == 0)
@@ -122,10 +147,51 @@ public class LevelGenerator : MonoBehaviour
         //grid.GetRandomTileOnEdgeOfGrid(out Vector2 goalPosition);
 
         //Sets goal position to random tile on grid
-        LevelGrid.Instance.GetRandomTile(out Vector2 goalPosition);
+        grid.GetRandomTile(out Vector2 goalPosition);
 
         //3c
         walker.StartWalking(startPosition, goalPosition, tileWidth);
+    }
+
+    //LOOP START WITH ROOMS
+    //a. CREATE ROOMS IN GRID RANDOMLY
+    //b. ENSURE ROOMS DONT OVERLAP
+    //   REMOVE ROOMS WHICH DO OVERLAP
+    //   PLCAE ROOM TILES
+    //
+    //c. ITERATE OVER ROOMS
+    //   calculate distance from start
+    //d. create node link from start to closest room
+    //REPEAT
+    //e. pathfind from room to next closest rooms
+    //Once all rooms linked up
+    //
+    //LOOP END
+
+    //3 WITH ROOMS
+    private void CreateRooms(int maxRooms)
+    {
+        for (int i = 0; i < maxRooms; i++)
+        {
+            Room newRoom = TryCreateRoom();
+
+            if (newRoom != null)
+            {
+                rooms.Add(newRoom);
+            }
+        }
+        Debug.Log(rooms.Count);
+    }
+
+    private Room TryCreateRoom()
+    {
+        Room newRoom = new Room();
+        if (newRoom.toDestroy)
+        {
+            newRoom = null;
+        }
+
+        return newRoom;
     }
 
     //4
@@ -135,5 +201,28 @@ public class LevelGenerator : MonoBehaviour
         {
             navMeshSurface.BuildNavMesh();
         }
+    }
+
+    public int GetTileWidth()
+    {
+        return tileWidth;
+    }
+
+    public Tile CreateTile(int x, int y)
+    {
+        Vector3 tilePos = new Vector3(x, 0, y) * tileWidth;
+
+        Tile tile = Instantiate(tileObject, tilePos, Quaternion.identity, transform).GetComponent<Tile>();
+        if (tile != null)
+        {
+            grid.AddPosToGrid(new Vector2(x, y), tile);
+        }
+        return tile;
+    }
+
+    public static Color GetColourFromInt(int value)
+    {
+        return Color.Lerp(Color.red, Color.blue, value / LevelGrid.Instance.size.x);
+
     }
 }
