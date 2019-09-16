@@ -29,4 +29,9 @@ public class Tile : MonoBehaviour
     {
         return Mathf.FloorToInt(Vector2.Distance(GetTilePos(), Vector2.zero));
     }
+
+    public void SelfDestruct()
+    {
+        Destroy(gameObject);
+    }
 }

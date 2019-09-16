@@ -26,22 +26,6 @@ public class LevelGrid
         }
     }
 
-    private void CreateGrid()
-    {
-        for (int xPos = 0; xPos < size.x; xPos++)
-        {
-            for (int yPos = 0; yPos < size.y; yPos++)
-            {
-                Vector2 position = new Vector2(xPos, yPos);
-                if (isPosOnEdgeOfMap(position))
-                {
-
-                    //pointDict.Add(position, null);
-                }
-            }
-        }
-    }
-
     private bool isPosOnEdgeOfMap(Vector2 position)
     {
         //Only allows for rectangular maps
@@ -243,4 +227,13 @@ public class LevelGrid
         }
     }
     //ENDIMPORT
+
+    public void ClearGrid()
+    {
+        foreach (Tile tile in pointDict.Values)
+        {
+            tile.SelfDestruct();
+        }
+        pointDict = new Dictionary<Vector2, Tile>();
+    }
 }

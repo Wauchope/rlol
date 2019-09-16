@@ -17,6 +17,7 @@ public class LevelGenerator : MonoBehaviour
 
     private NavMeshSurface navMeshSurface;
 
+    private List<Node> nodes;
     private List<Room> rooms;
 
     private int tileWidth = 25;
@@ -44,6 +45,33 @@ public class LevelGenerator : MonoBehaviour
 
     }
 
+    private void OnDrawGizmos()
+    {
+        if (Application.isPlaying)
+        {
+            //foreach (Node node in nodes)
+            for (int i = 0; i < nodes.Count - 2; i++)
+            {
+                Node node = nodes[i];
+                Vector2 pos = node.GetPosition();
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawSphere(new Vector3(pos.x * tileWidth, 0, pos.y * tileWidth), 10f);
+                if (node.GetConnections().Count != 0)
+                {
+                    foreach (NodeConnection connection in node.GetConnections())
+                    {
+                        Node[] points = connection.GetNodes();
+                        Vector3 worldPosA = new Vector3(points[0].GetPosition().x * tileWidth, 0, points[0].GetPosition().y * tileWidth);
+                        Vector3 worldPosB = new Vector3(points[1].GetPosition().x * tileWidth, 0, points[1].GetPosition().y * tileWidth);
+                        Gizmos.color = Color.cyan;
+                        Gizmos.DrawLine(worldPosA, worldPosB);
+                    }
+                }
+            }
+        }
+
+    }
+
     private void GenerateLevel()
     {
         //1.  Create grid of size (gridSizeX, gridSizeY)
@@ -66,23 +94,27 @@ public class LevelGenerator : MonoBehaviour
         CreateStartArea(3, 3);
 
         //3 & 4
-        StartCoroutine(CreateLevel());
+        CreateLevel();
 
         //3 WITH ROOMS
         //CreateRooms(25);
     }
 
-    private IEnumerator CreateLevel()
+    public void GenerateNewLevel()
     {
-        CreateRooms(25);
-        //3
-        for (int i = 0; i < 10; i++)
-        {
-            CreateRandomBranch(out Walker walker);
-            yield return new WaitWhile(() => walker.walking);
-        }
+        grid.ClearGrid();
 
-        //4
+        nodes = new List<Node>();
+
+        CreateStartArea(3, 3);
+        CreateLevel();
+    }
+
+    private void CreateLevel()
+    {
+        CreateNodes(25, 10);
+        CreateNodeConnections();
+
         BuildNavMesh();
 
     }
@@ -194,6 +226,71 @@ public class LevelGenerator : MonoBehaviour
         return newRoom;
     }
 
+    //Create Nodes
+    private void CreateNodes(int maxNodes, int buffer)
+    {
+        nodes = new List<Node>();
+        nodes.Add(new Node(new Vector2(0, 0)));
+        nodes.Add(new Node(new Vector2(grid.size.x, grid.size.y)));
+
+        for (int i = 0; i < maxNodes; i++)
+        {
+            int x = Mathf.FloorToInt(Random.Range(5, grid.size.x));
+            int y = Mathf.FloorToInt(Random.Range(5, grid.size.y));
+
+            Vector2 newNodePos = new Vector2(x, y);
+
+            bool failed = false;
+
+            if (nodes.Count != 0)
+            {
+                foreach (Node node in nodes)
+                {
+                    if (node.GetDirectDistance(newNodePos) <= buffer)
+                    {
+                        failed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!failed)
+            {
+                Node newNode = new Node(newNodePos);
+                nodes.Add(newNode);
+                Debug.Log(newNodePos);
+            }
+        }
+    }
+
+    private void CreateNodeConnections()
+    {
+        SortNodesListByDistance(Vector2.zero);
+
+        for (int i = 0; i < nodes.Count - 3; i++)
+        {
+            Node connectedNode1;
+            Node connectedNode2;
+            foreach (Node node in nodes)
+            {
+                
+                //compare nodes[i] to node, for the 2 nodes closest to the current node (check distance to current node) add a connection
+            }
+
+            nodes[i].AddConnection(new NodeConnection(nodes[i], nodes[i + 1]));
+            nodes[i].AddConnection(new NodeConnection(nodes[i], nodes[i + 2]));
+        }
+        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 3], nodes[nodes.Count - 2]));
+        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 3], nodes[nodes.Count - 1]));
+        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 2], nodes[nodes.Count - 1]));
+
+    }
+
+    private void CreateMinimumSpanningTree()
+    {
+
+    }
+
     //4
     private void BuildNavMesh()
     {
@@ -223,6 +320,35 @@ public class LevelGenerator : MonoBehaviour
     public static Color GetColourFromInt(int value)
     {
         return Color.Lerp(Color.red, Color.blue, value / LevelGrid.Instance.size.x);
+    }
 
+    //Bubble sort algorithm
+    private void SortNodesListByDistance(Vector2 control)
+    {
+        int n = nodes.Count;
+
+        for (int i = 0; i < n - 1; i++)
+        {
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                Node node1 = nodes[j];
+                Node node2 = nodes[j + 1];
+
+                if (nodes[j].GetDistance(control) < nodes[j + 1].GetDistance(control) && nodes[j].GetDirectDistance(control) < nodes[j + 1].GetDirectDistance(control))
+                //if (nodes[j].GetPosition().x < nodes[j + 1].GetPosition().x || nodes[j].GetPosition().y < nodes[j + 1].GetPosition().y)
+                //if (Mathf.Pow(Mathf.Pow(node1.GetPosition().x, 2) + Mathf.Pow(node1.GetPosition().y, 2), 0.5f) < Mathf.Pow(Mathf.Pow(node2.GetPosition().x, 2) + Mathf.Pow(node2.GetPosition().y, 2), 0.5f))
+                {
+                    
+                    Node temp = nodes[j];
+                    nodes[j] = nodes[j + 1];
+                    nodes[j + 1] = temp;
+                }
+            }
+        }
+
+        foreach (Node node in nodes)
+        {
+            Debug.Log(node.GetDistance(new Vector2(0, 0)));
+        }
     }
 }
