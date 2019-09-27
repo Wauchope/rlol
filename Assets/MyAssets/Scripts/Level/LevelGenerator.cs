@@ -265,25 +265,52 @@ public class LevelGenerator : MonoBehaviour
 
     private void CreateNodeConnections()
     {
-        SortNodesListByDistance(Vector2.zero);
+        List<NodeConnection> newConnections = new List<NodeConnection>();
 
-        for (int i = 0; i < nodes.Count - 3; i++)
+        Node[] nodesToConnect;
+
+        //for each node
+        for (int i = 0; i < nodes.Count; i++)
         {
-            Node connectedNode1;
-            Node connectedNode2;
-            foreach (Node node in nodes)
+            nodesToConnect = new Node[2] { nodes[1], nodes[2] };
+
+            //compare the distance of each node with the nodes stored in nodesToConnect
+            for (int j = 0; j < nodes.Count - i - 1; j++)
             {
+                // remainingNodes[i] is the current node
+                // remainingNodes[j] is the node being compared
+
+                bool actionTaken;
                 
-                //compare nodes[i] to node, for the 2 nodes closest to the current node (check distance to current node) add a connection
+                if (nodes[i].GetDistance(nodes[j]) < nodes[i].GetDistance(nodesToConnect[0]))
+                {
+                    nodesToConnect[0] = nodes[j];
+                    actionTaken = true;
+                }
+                else if (nodes[i].GetDistance(nodes[j]) < nodes[i].GetDistance(nodesToConnect[1]))
+                {
+                    nodesToConnect[1] = nodes[j];
+                    actionTaken = true;
+                }
+                
+
             }
 
-            nodes[i].AddConnection(new NodeConnection(nodes[i], nodes[i + 1]));
-            nodes[i].AddConnection(new NodeConnection(nodes[i], nodes[i + 2]));
-        }
-        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 3], nodes[nodes.Count - 2]));
-        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 3], nodes[nodes.Count - 1]));
-        nodes[nodes.Count - 2].AddConnection(new NodeConnection(nodes[nodes.Count - 2], nodes[nodes.Count - 1]));
+            //add NodeConnections from nodesToConnect to connectionsToAdd
 
+            for (int z = 0; z < nodesToConnect.Length; z++)
+            {
+                NodeConnection outwardConnection = new NodeConnection(nodes[i], nodesToConnect[z]);
+                NodeConnection inwardConnection = new NodeConnection(nodesToConnect[z], nodes[i]);
+
+                //check if connectionsToAdd doesnt contain the connection or its inverse
+                if (!newConnections.Contains(outwardConnection) || !newConnections.Contains(inwardConnection))
+                {
+                    nodes[i].AddConnection(outwardConnection);
+                    newConnections.Add(outwardConnection);
+                }
+            }
+        }
     }
 
     private void CreateMinimumSpanningTree()
@@ -323,32 +350,35 @@ public class LevelGenerator : MonoBehaviour
     }
 
     //Bubble sort algorithm
-    private void SortNodesListByDistance(Vector2 control)
+    private List<Node> SortNodesListByDistance(Vector2 control, List<Node> nodesToSort)
     {
-        int n = nodes.Count;
+        int n = nodesToSort.Count;
 
         for (int i = 0; i < n - 1; i++)
         {
             for (int j = 0; j < n - i - 1; j++)
             {
-                Node node1 = nodes[j];
-                Node node2 = nodes[j + 1];
+                Node node1 = nodesToSort[j];
+                Node node2 = nodesToSort[j + 1];
 
-                if (nodes[j].GetDistance(control) < nodes[j + 1].GetDistance(control) && nodes[j].GetDirectDistance(control) < nodes[j + 1].GetDirectDistance(control))
+                if (/*nodesToSort[j].GetDistance(control) < nodesToSort[j + 1].GetDistance(control)) && */
+                    nodesToSort[j].GetDirectDistance(control) < nodesToSort[j + 1].GetDirectDistance(control))
                 //if (nodes[j].GetPosition().x < nodes[j + 1].GetPosition().x || nodes[j].GetPosition().y < nodes[j + 1].GetPosition().y)
                 //if (Mathf.Pow(Mathf.Pow(node1.GetPosition().x, 2) + Mathf.Pow(node1.GetPosition().y, 2), 0.5f) < Mathf.Pow(Mathf.Pow(node2.GetPosition().x, 2) + Mathf.Pow(node2.GetPosition().y, 2), 0.5f))
                 {
                     
-                    Node temp = nodes[j];
-                    nodes[j] = nodes[j + 1];
-                    nodes[j + 1] = temp;
+                    Node temp = nodesToSort[j];
+                    nodesToSort[j] = nodesToSort[j + 1];
+                    nodesToSort[j + 1] = temp;
                 }
             }
         }
 
-        foreach (Node node in nodes)
+        foreach (Node node in nodesToSort)
         {
             Debug.Log(node.GetDistance(new Vector2(0, 0)));
         }
+
+        return nodesToSort;
     }
 }

@@ -13,6 +13,7 @@ public class Node
     {
         this.position = position;
         connections = new List<NodeConnection>();
+        //inwardConnections = new List<NodeConnection>();
     }
 
     public int GetDistance(Node node)
@@ -47,7 +48,17 @@ public class Node
     }
 
     public void AddConnection(NodeConnection newConnection)
+    {/*, bool isOutwardConnection)
     {
+        if (isOutwardConnection)
+        {
+            inwardConnections.Add(newConnection);
+        }
+        else
+        {
+            outwardConnections.Add(newConnection);
+        }*/
+
         connections.Add(newConnection);
     }
 
